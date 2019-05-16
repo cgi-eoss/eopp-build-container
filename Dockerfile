@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y\
     locales\
     && rm -rf /var/lib/apt/lists/*
 
-ENV BAZEL_VER 0.24.1
+ENV BAZEL_VER 0.25.2
 
 # Set up apt repos
 RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-key add - &&\
