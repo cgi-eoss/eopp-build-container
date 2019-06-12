@@ -27,7 +27,9 @@ RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-
     curl -sL https://download.docker.com/linux/ubuntu/gpg | apt-key add - &&\
     echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable" >/etc/apt/sources.list.d/docker.list &&\
     curl -sL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - &&\
-    echo "deb https://deb.nodesource.com/$NODE_VER xenial main" >/etc/apt/sources.list.d/nodejs.list
+    echo "deb https://deb.nodesource.com/$NODE_VER xenial main" >/etc/apt/sources.list.d/nodejs.list &&\
+    curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - &&\
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" >/etc/apt/sources.list.d/yarn.list
 
 # Install packages
 RUN curl -sLO "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VER}/bazel_${BAZEL_VER}-linux-x86_64.deb"\
@@ -35,6 +37,7 @@ RUN curl -sLO "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VER
     docker-ce\
     kubectl\
     nodejs\
+    yarn\
     ./bazel_${BAZEL_VER}-linux-x86_64.deb\
     && rm -rf /var/lib/apt/lists/* ./bazel_${BAZEL_VER}-linux-x86_64.deb
 
