@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y\
     locales\
     && rm -rf /var/lib/apt/lists/*
 
-ENV BAZEL_VER 0.26.1
+ENV BAZEL_VER 0.27.2
 ENV NODE_VER node_10.x
 
 # Set up apt repos
