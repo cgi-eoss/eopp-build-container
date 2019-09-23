@@ -1,10 +1,20 @@
 FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y\
+# No interactive frontend during docker build
+ARG DEBIAN_FRONTEND=noninteractive
+ARG DEBCONF_NONINTERACTIVE_SEEN=true
+
+# Note for selenium testing: Firefox is installed for its deps, but then
+# removed so downstream builds can select their own version.
+
+RUN apt-get update && apt-get -y --no-install-recommends install \
     apt-transport-https\
     build-essential\
     curl\
+    firefox\
     git\
+    gnupg\
+    jq\
     libdbus-glib-1-2\
     libgtk-3.0\
     liblzma-dev\
@@ -14,10 +24,12 @@ RUN apt-get update && apt-get install -y\
     python\
     python-pip\
     locales\
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get -y purge firefox\
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
+    && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' ./usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/java.security
 
-ENV BAZEL_VER 0.28.1
-ENV NODE_VER node_10.x
+ARG BAZEL_VER=0.28.1
+ARG NODE_VER=node_10.x
 
 # Set up apt repos
 RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-key add - &&\
@@ -40,6 +52,19 @@ RUN curl -sLO "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VER
     yarn\
     ./bazel_${BAZEL_VER}-linux-x86_64.deb\
     && rm -rf /var/lib/apt/lists/* ./bazel_${BAZEL_VER}-linux-x86_64.deb
+
+ARG MAVEN_VER=3.6.2
+ARG MAVEN_SHA=d941423d115cd021514bfd06c453658b1b3e39e6240969caf4315ab7119a77299713f14b620fb2571a264f8dff2473d8af3cb47b05acf0036fc2553199a5c1ee
+ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VER}/binaries
+
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+  && curl -fsSL -o /tmp/apache-maven.tar.gz ${MAVEN_BASE_URL}/apache-maven-${MAVEN_VER}-bin.tar.gz \
+  && echo "${MAVEN_SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - \
+  && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
+  && rm -f /tmp/apache-maven.tar.gz \
+  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+ENV MAVEN_HOME /usr/share/maven
 
 # Configuring the locale enables bazel's autocompletion
 RUN locale-gen en_GB.UTF-8 &&\
