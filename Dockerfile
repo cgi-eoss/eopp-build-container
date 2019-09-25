@@ -13,6 +13,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     curl\
     firefox\
     git\
+    git-lfs\
     gnupg\
     jq\
     libdbus-glib-1-2\
