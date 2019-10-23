@@ -29,7 +29,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
     && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' ./usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/java.security
 
-ARG BAZEL_VER=0.28.1
+ARG BAZEL_VER=1.1.0
 ARG NODE_VER=node_10.x
 
 # Set up apt repos
