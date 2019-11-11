@@ -23,7 +23,15 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     openjdk-8-jdk\
     openssh-server\
     python\
+    python-dev\
     python-pip\
+    python-setuptools\
+    python-wheel\
+    python3\
+    python3-dev\
+    python3-pip\
+    python3-setuptools\
+    python3-wheel\
     locales\
     && apt-get -y purge firefox\
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
