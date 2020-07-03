@@ -80,8 +80,9 @@ ENV MAVEN_HOME /usr/share/maven
 ARG HELM_VER=3.2.4
 ARG HELM_URL=https://get.helm.sh/helm-v${HELM_VER}-linux-amd64.tar.gz
 
-RUN curl -sSL -o /usr/bin/helm ${HELM_URL} \
-  && chmod 755 /usr/bin/helm
+RUN mkdir -p /opt/helm \
+  && curl -sSL ${HELM_URL} | tar -C /opt/helm --strip-components=1 -xzf - \
+  && ln -s /opt/helm/helm /usr/bin/helm
 
 # Configuring the locale enables bazel's autocompletion
 RUN locale-gen en_GB.UTF-8 &&\
