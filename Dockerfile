@@ -76,6 +76,13 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 
 ENV MAVEN_HOME /usr/share/maven
 
+# Install https://helm.sh/
+ARG HELM_VER=3.2.4
+ARG HELM_URL=https://get.helm.sh/helm-v${HELM_VER}-linux-amd64.tar.gz
+
+RUN curl -sSL -o /usr/bin/helm ${HELM_URL} \
+  && chmod 755 /usr/bin/helm
+
 # Configuring the locale enables bazel's autocompletion
 RUN locale-gen en_GB.UTF-8 &&\
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales 2>/dev/null
