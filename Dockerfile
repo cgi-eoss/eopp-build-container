@@ -38,7 +38,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' ./usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/java.security
 
 ARG BAZEL_VER=3.4.1
-ARG NODE_VER=node_10.x
+ARG NODE_VER=node_12.x
 
 # Set up apt repos
 RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-key add - &&\
