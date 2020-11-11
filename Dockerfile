@@ -1,4 +1,7 @@
-FROM ubuntu:18.04
+ARG DOCKER_VER=19.03.13
+FROM docker:${DOCKER_VER} as docker
+
+FROM ubuntu:20.04
 
 # No interactive frontend during docker build
 ARG DEBIAN_FRONTEND=noninteractive
@@ -20,13 +23,12 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     libgtk-3.0\
     liblzma-dev\
     libxt6\
-    openjdk-8-jdk\
+    openjdk-11-jdk\
     openssh-server\
     python\
     python-dev\
-    python-pip\
     python-setuptools\
-    python-wheel\
+    python-pip-whl\
     python3\
     python3-dev\
     python3-pip\
@@ -35,9 +37,9 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     locales\
     && apt-get -y purge firefox\
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
-    && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' ./usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/java.security
+    && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
 
-ARG BAZEL_VER=3.4.1
+ARG BAZELISK_VER=1.7.4
 ARG NODE_VER=node_12.x
 
 # Set up apt repos
@@ -45,23 +47,22 @@ RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-
     echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" >/etc/apt/sources.list.d/bazel.list &&\
     curl -sL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - &&\
     echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list &&\
-    curl -sL https://download.docker.com/linux/ubuntu/gpg | apt-key add - &&\
-    echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable" >/etc/apt/sources.list.d/docker.list &&\
     curl -sL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - &&\
-    echo "deb https://deb.nodesource.com/$NODE_VER xenial main" >/etc/apt/sources.list.d/nodejs.list &&\
+    echo "deb https://deb.nodesource.com/${NODE_VER} focal main" > /etc/apt/sources.list.d/nodesource.list &&\
     curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - &&\
     echo "deb https://dl.yarnpkg.com/debian/ stable main" >/etc/apt/sources.list.d/yarn.list
 
 # Install packages
-RUN curl -sLO "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VER}/bazel_${BAZEL_VER}-linux-x86_64.deb"\
+RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64" -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel\
     && apt update && apt install -y\
-    docker-ce\
     kubectl\
     nodejs\
     yarn\
-    ./bazel_${BAZEL_VER}-linux-x86_64.deb\
-    && rm -rf /var/lib/apt/lists/* ./bazel_${BAZEL_VER}-linux-x86_64.deb\
+    && rm -rf /var/lib/apt/lists/*\
     && npm install -g typescript
+
+# Install docker cli only
+COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
 
 ARG MAVEN_VER=3.6.3
 ARG MAVEN_SHA=c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0
@@ -77,7 +78,7 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 ENV MAVEN_HOME /usr/share/maven
 
 # Install https://helm.sh/
-ARG HELM_VER=3.2.4
+ARG HELM_VER=3.4.0
 ARG HELM_URL=https://get.helm.sh/helm-v${HELM_VER}-linux-amd64.tar.gz
 
 RUN mkdir -p /opt/helm \
