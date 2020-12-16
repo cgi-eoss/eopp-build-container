@@ -35,6 +35,8 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     python3-setuptools\
     python3-wheel\
     locales\
+    unzip\
+    zip\
     && apt-get -y purge firefox\
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
     && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
