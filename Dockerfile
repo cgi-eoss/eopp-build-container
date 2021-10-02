@@ -1,7 +1,7 @@
-ARG DOCKER_VER=19.03.13
-FROM docker:${DOCKER_VER} as docker
+ARG DOCKER_VER=20.10.8
+FROM docker.io/docker:${DOCKER_VER} as docker
 
-FROM ubuntu:20.04
+FROM docker.io/ubuntu:20.04
 
 # No interactive frontend during docker build
 ARG DEBIAN_FRONTEND=noninteractive
@@ -36,11 +36,13 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     python3-wheel\
     locales\
     unzip\
+    xz-utils\
     zip\
     && apt-get -y purge firefox\
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
     && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
 
+ARG SHELLCHECK_VER=v0.7.2
 ARG BAZELISK_VER=1.7.4
 ARG NODE_VER=node_12.x
 
@@ -56,6 +58,7 @@ RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-
 
 # Install packages
 RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64" -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel\
+    && curl -sL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VER}/shellcheck-${SHELLCHECK_VER}.linux.x86_64.tar.xz" | tar -xJ && mv shellcheck-${SHELLCHECK_VER}/shellcheck /usr/local/bin/shellcheck && rm -rf shellcheck-${SHELLCHECK_VER}\
     && apt update && apt install -y\
     kubectl\
     nodejs\
