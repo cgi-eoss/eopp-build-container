@@ -1,4 +1,4 @@
-ARG DOCKER_VER=20.10.8
+ARG DOCKER_VER=20.10.22-cli
 FROM docker.io/docker:${DOCKER_VER} as docker
 
 FROM docker.io/ubuntu:20.04
@@ -42,9 +42,9 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
     && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
 
-ARG SHELLCHECK_VER=v0.7.2
-ARG BAZELISK_VER=1.7.4
-ARG NODE_VER=node_12.x
+ARG SHELLCHECK_VER=v0.9.0
+ARG BAZELISK_VER=1.15.0
+ARG NODE_VER=node_18.x
 
 # Set up apt repos
 RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-key add - &&\
@@ -69,8 +69,8 @@ RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELI
 # Install docker cli only
 COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
 
-ARG MAVEN_VER=3.6.3
-ARG MAVEN_SHA=c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0
+ARG MAVEN_VER=3.8.7
+ARG MAVEN_SHA=21c2be0a180a326353e8f6d12289f74bc7cd53080305f05358936f3a1b6dd4d91203f4cc799e81761cf5c53c5bbe9dcc13bdb27ec8f57ecf21b2f9ceec3c8d27
 ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VER}/binaries
 
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
@@ -83,7 +83,7 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 ENV MAVEN_HOME /usr/share/maven
 
 # Install https://helm.sh/
-ARG HELM_VER=3.4.0
+ARG HELM_VER=3.10.3
 ARG HELM_URL=https://get.helm.sh/helm-v${HELM_VER}-linux-amd64.tar.gz
 
 RUN mkdir -p /opt/helm \
