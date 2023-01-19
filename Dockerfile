@@ -95,4 +95,6 @@ RUN locale-gen en_GB.UTF-8 &&\
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales 2>/dev/null
 
 # Create a service user with UID matching jenkins/jnlp-slave image to simplify k8s-based builds
-RUN adduser --system --home /home/jenkins --uid 10000 jenkins
+RUN addgroup --system --gid 1000 jenkins \
+  && adduser --system --home /home/jenkins --uid 1000 --gid 1000 jenkins
+
