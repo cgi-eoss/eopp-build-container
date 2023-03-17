@@ -20,6 +20,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     gnupg\
     jq\
     libdbus-glib-1-2\
+    libgbm1\
     libgtk-3.0\
     liblzma-dev\
     libxt6\
@@ -43,7 +44,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
 
 ARG SHELLCHECK_VER=v0.9.0
-ARG BAZELISK_VER=1.15.0
+ARG BAZELISK_VER=1.16.0
 ARG NODE_VER=node_18.x
 
 # Set up apt repos
@@ -69,9 +70,9 @@ RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELI
 # Install docker cli only
 COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
 
-ARG MAVEN_VER=3.8.7
-ARG MAVEN_SHA=21c2be0a180a326353e8f6d12289f74bc7cd53080305f05358936f3a1b6dd4d91203f4cc799e81761cf5c53c5bbe9dcc13bdb27ec8f57ecf21b2f9ceec3c8d27
-ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VER}/binaries
+ARG MAVEN_VER=3.9.0
+ARG MAVEN_SHA=1ea149f4e48bc7b34d554aef86f948eca7df4e7874e30caf449f3708e4f8487c71a5e5c072a05f17c60406176ebeeaf56b5f895090c7346f8238e2da06cf6ecd
+ARG MAVEN_BASE_URL=https://dlcdn.apache.org/maven/maven-3/${MAVEN_VER}/binaries
 
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
   && curl -fsSL -o /tmp/apache-maven.tar.gz ${MAVEN_BASE_URL}/apache-maven-${MAVEN_VER}-bin.tar.gz \
