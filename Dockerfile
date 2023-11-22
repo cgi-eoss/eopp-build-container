@@ -1,7 +1,7 @@
-ARG DOCKER_VER=20.10.22-cli
+ARG DOCKER_VER=24.0.7-cli
 FROM docker.io/docker:${DOCKER_VER} as docker
 
-FROM docker.io/ubuntu:20.04
+FROM docker.io/ubuntu:22.04
 
 # No interactive frontend during docker build
 ARG DEBIAN_FRONTEND=noninteractive
@@ -26,10 +26,11 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     libxt6\
     openjdk-11-jdk\
     openssh-server\
-    python\
-    python-dev\
+    python-is-python3\
     python-setuptools\
-    python-pip-whl\
+    python2\
+    python2-dev\
+    python2-pip-whl\
     python3\
     python3-dev\
     python3-pip\
@@ -44,8 +45,8 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
 
 ARG SHELLCHECK_VER=v0.9.0
-ARG BAZELISK_VER=1.16.0
-ARG NODE_VER=node_18.x
+ARG BAZELISK_VER=1.19.0
+ARG NODE_VER=node_20.x
 
 # Set up apt repos
 RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-key add - &&\
@@ -53,7 +54,7 @@ RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-
     curl -sL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - &&\
     echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list &&\
     curl -sL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - &&\
-    echo "deb https://deb.nodesource.com/${NODE_VER} focal main" > /etc/apt/sources.list.d/nodesource.list &&\
+    echo "deb https://deb.nodesource.com/${NODE_VER} jammy main" > /etc/apt/sources.list.d/nodesource.list &&\
     curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - &&\
     echo "deb https://dl.yarnpkg.com/debian/ stable main" >/etc/apt/sources.list.d/yarn.list
 
@@ -70,8 +71,8 @@ RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELI
 # Install docker cli only
 COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
 
-ARG MAVEN_VER=3.9.0
-ARG MAVEN_SHA=1ea149f4e48bc7b34d554aef86f948eca7df4e7874e30caf449f3708e4f8487c71a5e5c072a05f17c60406176ebeeaf56b5f895090c7346f8238e2da06cf6ecd
+ARG MAVEN_VER=3.9.5
+ARG MAVEN_SHA=4810523ba025104106567d8a15a8aa19db35068c8c8be19e30b219a1d7e83bcab96124bf86dc424b1cd3c5edba25d69ec0b31751c136f88975d15406cab3842b
 ARG MAVEN_BASE_URL=https://dlcdn.apache.org/maven/maven-3/${MAVEN_VER}/binaries
 
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
@@ -84,7 +85,7 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 ENV MAVEN_HOME /usr/share/maven
 
 # Install https://helm.sh/
-ARG HELM_VER=3.10.3
+ARG HELM_VER=3.13.2
 ARG HELM_URL=https://get.helm.sh/helm-v${HELM_VER}-linux-amd64.tar.gz
 
 RUN mkdir -p /opt/helm \
