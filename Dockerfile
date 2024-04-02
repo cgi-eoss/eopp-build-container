@@ -1,4 +1,4 @@
-ARG DOCKER_VER=24.0.7-cli
+ARG DOCKER_VER=26.0.0-cli
 FROM docker.io/docker:${DOCKER_VER} as docker
 
 FROM docker.io/ubuntu:22.04
@@ -7,56 +7,42 @@ FROM docker.io/ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEBCONF_NONINTERACTIVE_SEEN=true
 
-# Note for selenium testing: Firefox is installed for its deps, but then
-# removed so downstream builds can select their own version.
-
 RUN apt-get update && apt-get -y --no-install-recommends install \
     apt-transport-https\
     build-essential\
+    ca-certificates\
     curl\
-    firefox\
     git\
     git-lfs\
     gnupg\
     jq\
-    libdbus-glib-1-2\
-    libgbm1\
-    libgtk-3.0\
-    liblzma-dev\
-    libxt6\
-    openjdk-11-jdk\
-    openssh-server\
-    python-is-python3\
-    python-setuptools\
-    python2\
-    python2-dev\
-    python2-pip-whl\
-    python3\
-    python3-dev\
-    python3-pip\
-    python3-setuptools\
-    python3-wheel\
     locales\
+    openjdk-21-jdk\
     unzip\
     xz-utils\
     zip\
-    && apt-get -y purge firefox\
-    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*\
-    && sed -i 's/securerandom\.source=file:\/dev\/random/securerandom\.source=file:\/dev\/urandom/' /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-ARG SHELLCHECK_VER=v0.9.0
+ARG SHELLCHECK_VER=v0.10.0
 ARG BAZELISK_VER=1.19.0
-ARG NODE_VER=node_20.x
+ARG KUBERNETES_VER=1.29
+ARG NODE_VER=20.x
 
 # Set up apt repos
-RUN curl -sL https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | apt-key add - &&\
-    echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" >/etc/apt/sources.list.d/bazel.list &&\
-    curl -sL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - &&\
-    echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list &&\
-    curl -sL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - &&\
-    echo "deb https://deb.nodesource.com/${NODE_VER} jammy main" > /etc/apt/sources.list.d/nodesource.list &&\
-    curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - &&\
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" >/etc/apt/sources.list.d/yarn.list
+RUN curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >/etc/apt/keyrings/bazel-archive-keyring.gpg &&\
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" >/etc/apt/sources.list.d/bazel.list &&\
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg &&\
+    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${KUBERNETES_VER}/deb/ /" >/etc/apt/sources.list.d/kubernetes.list &&\
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg &&\
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_VER} nodistro main" >/etc/apt/sources.list.d/nodesource.list &&\
+    # N|solid Config
+    echo "Package: nsolid" >/etc/apt/preferences.d/nsolid &&\
+    echo "Pin: origin deb.nodesource.com" >>/etc/apt/preferences.d/nsolid &&\
+    echo "Pin-Priority: 600" >>/etc/apt/preferences.d/nsolid &&\
+    # Nodejs Config
+    echo "Package: nodejs" >/etc/apt/preferences.d/nodejs &&\
+    echo "Pin: origin deb.nodesource.com" >>/etc/apt/preferences.d/nodejs &&\
+    echo "Pin-Priority: 600" >>/etc/apt/preferences.d/nodejs
 
 # Install packages
 RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VER}/bazelisk-linux-amd64" -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel\
@@ -64,15 +50,14 @@ RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELI
     && apt update && apt install -y\
     kubectl\
     nodejs\
-    yarn\
     && rm -rf /var/lib/apt/lists/*\
-    && npm install -g typescript
+    && npm install -g typescript yarn
 
 # Install docker cli only
 COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
 
-ARG MAVEN_VER=3.9.5
-ARG MAVEN_SHA=4810523ba025104106567d8a15a8aa19db35068c8c8be19e30b219a1d7e83bcab96124bf86dc424b1cd3c5edba25d69ec0b31751c136f88975d15406cab3842b
+ARG MAVEN_VER=3.9.6
+ARG MAVEN_SHA=706f01b20dec0305a822ab614d51f32b07ee11d0218175e55450242e49d2156386483b506b3a4e8a03ac8611bae96395fd5eec15f50d3013d5deed6d1ee18224
 ARG MAVEN_BASE_URL=https://dlcdn.apache.org/maven/maven-3/${MAVEN_VER}/binaries
 
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
@@ -85,7 +70,7 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 ENV MAVEN_HOME /usr/share/maven
 
 # Install https://helm.sh/
-ARG HELM_VER=3.13.2
+ARG HELM_VER=3.14.3
 ARG HELM_URL=https://get.helm.sh/helm-v${HELM_VER}-linux-amd64.tar.gz
 
 RUN mkdir -p /opt/helm \
@@ -99,4 +84,3 @@ RUN locale-gen en_GB.UTF-8 &&\
 # Create a service user with UID matching jenkins/jnlp-slave image to simplify k8s-based builds
 RUN addgroup --system --gid 1000 jenkins \
   && adduser --system --home /home/jenkins --uid 1000 --gid 1000 jenkins
-
