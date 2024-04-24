@@ -19,8 +19,10 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     locales\
     openjdk-21-jdk\
     unzip\
+    xvfb\
     xz-utils\
     zip\
+    zstd\
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 ARG SHELLCHECK_VER=v0.10.0
@@ -51,23 +53,10 @@ RUN curl -sL "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELI
     kubectl\
     nodejs\
     && rm -rf /var/lib/apt/lists/*\
-    && npm install -g typescript yarn
+    && npm install -g typescript yarn pnpm
 
 # Install docker cli only
 COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
-
-ARG MAVEN_VER=3.9.6
-ARG MAVEN_SHA=706f01b20dec0305a822ab614d51f32b07ee11d0218175e55450242e49d2156386483b506b3a4e8a03ac8611bae96395fd5eec15f50d3013d5deed6d1ee18224
-ARG MAVEN_BASE_URL=https://dlcdn.apache.org/maven/maven-3/${MAVEN_VER}/binaries
-
-RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
-  && curl -fsSL -o /tmp/apache-maven.tar.gz ${MAVEN_BASE_URL}/apache-maven-${MAVEN_VER}-bin.tar.gz \
-  && echo "${MAVEN_SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - \
-  && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
-  && rm -f /tmp/apache-maven.tar.gz \
-  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
-
-ENV MAVEN_HOME /usr/share/maven
 
 # Install https://helm.sh/
 ARG HELM_VER=3.14.3
