@@ -16,6 +16,9 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     git-lfs\
     gnupg\
     jq\
+    libatk-bridge2.0-0\
+    libgbm1\
+    libgtk-3-0\
     locales\
     openjdk-21-jdk\
     unzip\
